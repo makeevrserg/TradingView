@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/watchListFragment">
+
+    <fragment
+        android:id="@+id/watchListFragment"
+        android:name="com.dinmakeev.tradingview.presentation.watchlist.WatchListFragment"
+        android:label="Watchlist"
+        tools:layout="@layout/watch_list_fragment">
+        <action
+            android:id="@+id/action_watchListFragment_to_chartFragment"
+            app:destination="@id/chartFragment"
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left" />
+    </fragment>
+    <fragment
+        android:id="@+id/chartFragment"
+        android:name="com.dinmakeev.tradingview.presentation.chart.ChartFragment"
+        android:label=" "
+        tools:layout="@layout/chart_fragment" >
+        <argument
+            android:name="symbol"
+            app:argType="string" />
+    </fragment>
+</navigation>

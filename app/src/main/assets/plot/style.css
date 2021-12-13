@@ -1,0 +1,17 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+#plot{
+    border: 2px solid black;
+    overflow: scroll;
+    /* padding: 30rem 0rem; */
+}
+#pricePlot{
+    position: absolute;
+    padding: 0px 0px;
+    width: 100%;
+    background: transparent;
+    background-color: transparent;
+}
