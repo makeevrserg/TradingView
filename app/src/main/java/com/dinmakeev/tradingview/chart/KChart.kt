@@ -37,8 +37,6 @@ class KChart(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _
         drawDate(canvas)
 
     }
-
-
     private fun drawPlot(canvas: Canvas) {
         var x = 0f
         for (i in data.indices) {
