@@ -28,6 +28,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
          * Конвертация пикселей в DensityPixel
          */
         fun pxToDp(px: Int) = (px / Resources.getSystem().displayMetrics.density).toInt()
+
         /**
          * Конвертация DensityPixel в пиксель
          */
@@ -45,14 +46,14 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
     var mCandleBodySize: Float = dpToPx(10).toFloat()
     var mCandleStringSize: Float = dpToPx(3).toFloat()
 
-    var highColor:Int = Color.parseColor("#2962FF")
-    var lowColor:Int = Color.parseColor("#FF2929")
+    var highColor: Int = Color.parseColor("#2962FF")
+    var lowColor: Int = Color.parseColor("#FF2929")
 
-    var innerCircleColor:Int = highColor
-    var outerCircleColor:Int = Color.parseColor("#552962FF")
+    var innerCircleColor: Int = highColor
+    var outerCircleColor: Int = Color.parseColor("#552962FF")
 
-    var innerCircleSize:Float = mCandleStringSize
-    var outerCircleSize:Float = mCandleBodySize
+    var innerCircleSize: Float = mCandleStringSize
+    var outerCircleSize: Float = mCandleBodySize
 
     private var mTextSize: Float = spToPx(12f).toFloat()
 
@@ -60,8 +61,6 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
 
     var verticalTextStep: Float = dpToPx(15).toFloat()
     var horizontalTextStep: Float = dpToPx(2).toFloat()
-
-
 
 
     init {
@@ -91,8 +90,10 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
 
                 xStep = getDimension(R.styleable.dmChart_step_x, xStep)
 
-                verticalTextStep = getDimension(R.styleable.dmChart_step_vertical_text, verticalTextStep)
-                horizontalTextStep = getDimension(R.styleable.dmChart_step_horizontal_text, horizontalTextStep)
+                verticalTextStep =
+                    getDimension(R.styleable.dmChart_step_vertical_text, verticalTextStep)
+                horizontalTextStep =
+                    getDimension(R.styleable.dmChart_step_horizontal_text, horizontalTextStep)
 
 
             } catch (e: Exception) {
@@ -126,11 +127,15 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
     private var maxY: Float = 0f
     private var minY: Float = 0f
 
+    private var track:Boolean = true
+
     open var data: MutableList<Data> = mutableListOf()
     open fun addData(_d: WatchListItemModel) {
         val d = Data(_d)
         data.add(d)
         calculateMinMax(data)
+        if (track)
+            scrollToLast()
         invalidate()
     }
 
@@ -142,10 +147,13 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
             return
 
         calculateMinMax(list)
+        scrollToLast()
+    }
+    private fun scrollToLast(){
         mScaleY = 8.0 / (maxY / minY).toDouble()
         scrollX = 0
         scrollY = 0
-        scrollBy((list.size * xStep - dpToPx(width / 4)).toInt(), 0)
+        scrollBy((data.size * xStep - dpToPx(width / 4)).toInt(), 0)
         scrolledX = scrollX + width
         scrolledY = height
     }
@@ -252,6 +260,8 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
      */
     private var mMoveDetector = GestureDetector(context, MoveListener())
 
+
+
     private inner class MoveListener : GestureDetector.SimpleOnGestureListener() {
         override fun onScroll(
             e1: MotionEvent,
@@ -259,43 +269,40 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
             distanceX: Float,
             distanceY: Float
         ): Boolean {
+            track = false
             scrolledY = scrollY + height
             scrolledX = scrollX + width
             scrollBy(distanceX.toInt(), distanceY.toInt())
             return true
         }
 
+        override fun onDoubleTap(e: MotionEvent?): Boolean {
+            track = true
+            scrollToLast()
+            return super.onDoubleTap(e)
+        }
+
     }
 
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            this@AbstractChart.scaleFactor *= detector.scaleFactor / dpToPx(110)
-            this@AbstractChart.mScaleX += (detector.currentSpanX - detector.previousSpanX) / max(
-                scrolledX,
-                dpToPx(110)
-            )
-            this@AbstractChart.mScaleY += (detector.currentSpanY - detector.previousSpanY) / dpToPx(
-                110
-            )
-
-
-            scrollBy(
-                (data.size * xStep * (detector.currentSpanX - detector.previousSpanX) / max(
-                    scrolledX,
-                    dpToPx(110)
-                )).toInt(), 0
-            )
-
-
+            track = false
+            val scale = dpToPx(110)
+            this@AbstractChart.scaleFactor *= detector.scaleFactor / scale
+            this@AbstractChart.mScaleX += (detector.currentSpanX - detector.previousSpanX) / scrolledX
+            this@AbstractChart.mScaleY += (detector.currentSpanY - detector.previousSpanY) / scale
 
 
             this@AbstractChart.mScaleX = max(0.5, min(this@AbstractChart.mScaleX, 8.0))
             this@AbstractChart.mScaleY = max(0.2, min(this@AbstractChart.mScaleY, 8.0))
 
-            scrollBy(
-                0,
-                (verticalTextStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(110))).toInt()
-            )
+            //После скейлинга двигаем наш view чтобы график не убегал
+            val amountY =
+                -(verticalTextStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(110))).toInt()
+            scrollBy(0, amountY)
+
+            val amountX = (data.size*xStep * (detector.currentSpanX - detector.previousSpanX) /scrolledX/width)
+            scrollBy(amountX.toInt(), 0)
 
             invalidate()
             return true
@@ -311,7 +318,6 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
     }
 
 
-
     /**
      * Рисуем цены учитывая отступ. Ужасный способ, но по-другому не додумались :(
      * */
@@ -325,7 +331,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
 
         for (i in minY.toInt() until maxY.toInt() step 1) {
             val y = getY(i.toDouble())
-            if (yMargin>verticalTextStep) {
+            if (yMargin > verticalTextStep) {
                 yMargin = 0f
                 canvas.drawText(
                     "${(i.toFloat()).round(2)}",
@@ -334,7 +340,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
                     textPaint()
                 )
             }
-            yMargin+=abs(y-prevY)
+            yMargin += abs(y - prevY)
             prevY = y
         }
     }

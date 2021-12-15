@@ -134,7 +134,7 @@
 
 
 
-        <com.dinmakeev.tradingview.chart.KChart
+        <com.dinmakeev.tradingview.chart.KChartLine
             android:id="@+id/kChart"
             android:layout_width="match_parent"
             android:layout_height="0dp"
