@@ -21,7 +21,7 @@ data class Data(
     val low: Double = close,
     val `open`: Double = close,
     val symbol: String,
-    val volume: Int = 0
+    val volume: Int? = 0
 ) {
 
     constructor(d:WatchListItemModel):this(close = (d.data.price?.toDouble())?:0.0,symbol = d.symbol)
@@ -42,9 +42,11 @@ data class Data(
         }
         fun random(close:Double?,i:Int = 0): Data {
             val date = "2021-09-21T17:00:00.000Z"
-            val open = close?:Random.nextDouble(130.0,150.0)
-            val low = Random.nextDouble(130.0,open)
-            val high = Random.nextDouble(open,150.0)
+            val MAX = 5000.0
+            val MIN = 100.0
+            val open = close?:Random.nextDouble(MIN,MAX)
+            val low = Random.nextDouble(MIN,open)
+            val high = Random.nextDouble(open,MAX)
             val close = Random.nextDouble(low,high)
             return Data(
                 close,date,high,0.0,low,open,"AAPL",0)

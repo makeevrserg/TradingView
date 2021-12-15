@@ -85,7 +85,7 @@ class WatchListFragment : Fragment() {
         })
 
         viewModel.toolbarTitle.observe(viewLifecycleOwner, {
-            (requireActivity() as AppCompatActivity).supportActionBar?.title = it
+            (requireActivity() as AppCompatActivity).supportActionBar?.title = ""
         })
         viewModel.isLoading.observe(viewLifecycleOwner, {
             binding.pbLoading.visibility = if (it) View.VISIBLE else View.GONE

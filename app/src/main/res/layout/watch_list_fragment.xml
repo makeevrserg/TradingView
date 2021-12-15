@@ -27,12 +27,24 @@
         <ProgressBar
             android:id="@+id/pbLoading"
             android:layout_width="match_parent"
-            android:indeterminateTint="#4477FF"
-            android:layout_height="50dp"/>
+            android:layout_height="50dp"
+            android:indeterminateTint="#4477FF" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:text="@{viewModel.toolbarTitle}"
+            android:textColor="?colorOnPrimary"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            tools:text="Watchlist" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginTop="6dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/watch_item" />
     </LinearLayout>

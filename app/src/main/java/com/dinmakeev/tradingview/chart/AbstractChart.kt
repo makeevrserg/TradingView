@@ -47,8 +47,8 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
     var mCandleStringSize: Float = dpToPx(3).toFloat()
     var mTextSize: Float = spToPx(12f).toFloat()
     var xStep: Float = 50f
-    var yStep: Float = dpToPx(20).toFloat()
-    var verticalTextStep: Float = dpToPx(2).toFloat()
+    var yStep: Float = dpToPx(5).toFloat()
+    var horizontalTextStep: Float = dpToPx(2).toFloat()
 
     /**
      * Параметр хранит перемещение по X,Y
@@ -82,17 +82,22 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
      * После апдейта целого списка - надо заново найти минимальные и максимальные координаты
      */
     open fun update(list: List<Data>) {
+        if (list.isNullOrEmpty())
+            return
         calculateMinMax(list)
+        mScaleY = 8.0 / (maxY / minY).toDouble()
         scrollX = 0
         scrollY = 0
-        scrollBy((list.size * xStep  - dpToPx(width/4)).toInt(), 0)
-        scrolledX = scrollX+width
+        scrollBy((list.size * xStep - dpToPx(width / 4)).toInt(), 0)
+        scrolledX = scrollX + width
         scrolledY = height
     }
 
     fun calculateMinMax(list: List<Data>) {
+        if (list.isNullOrEmpty())
+            return
         maxY = list.map { it.max() }.maxOrNull()?.toFloat()!!
-        minY = list.map { it.max() }.minOrNull()?.toFloat()!!
+        minY = list.map { it.min() }.minOrNull()?.toFloat()!!
     }
 
     /**
@@ -175,7 +180,7 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        scrolledX = width+scrollX
+        scrolledX = width + scrollX
         scrolledY = height
     }
 
@@ -208,26 +213,37 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             this@AbstractChart.scaleFactor *= detector.scaleFactor / dpToPx(80)
-            this@AbstractChart.mScaleX += (detector.currentSpanX - detector.previousSpanX) / max(scrolledX,dpToPx(data.size))
-            this@AbstractChart.mScaleY += (detector.currentSpanY - detector.previousSpanY) / dpToPx(110)
+            this@AbstractChart.mScaleX += (detector.currentSpanX - detector.previousSpanX) / max(
+                scrolledX,
+                dpToPx(110)
+            )
+            this@AbstractChart.mScaleY += (detector.currentSpanY - detector.previousSpanY) / dpToPx(
+                110
+            )
 
 
-            scrollBy((data.size*xStep*(detector.currentSpanX - detector.previousSpanX) / max(scrolledX,dpToPx(data.size))).toInt(),0)
+            scrollBy(
+                (data.size * xStep * (detector.currentSpanX - detector.previousSpanX) / max(
+                    scrolledX,
+                    dpToPx(110)
+                )).toInt(), 0
+            )
 
 
 
 
-            scrollBy((data.size*xStep*(detector.currentSpanX - detector.previousSpanX) / scrolledX).toInt(),0)
-
-            this@AbstractChart.mScaleX = Math.max(0.2, Math.min(this@AbstractChart.mScaleX, 8.0))
+            this@AbstractChart.mScaleX = Math.max(0.5, Math.min(this@AbstractChart.mScaleX, 8.0))
             this@AbstractChart.mScaleY = Math.max(0.2, Math.min(this@AbstractChart.mScaleY, 8.0))
 
+            scrollBy(
+                0,
+                (yStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(110))).toInt()
+            )
 
             invalidate()
             return true
         }
     }
-
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -247,8 +263,6 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
                 mTextSize = getDimension(R.styleable.dmChart_mTextSize, mTextSize)
                 xStep = getDimension(R.styleable.dmChart_step_x, xStep)
                 yStep = getDimension(R.styleable.dmChart_step_y, yStep)
-                verticalTextStep =
-                    getDimension(R.styleable.dmChart_step_vertical_text, verticalTextStep)
 
 
             } catch (e: Exception) {
@@ -260,9 +274,10 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
     }
 
 
-
     fun drawPriceText(canvas: Canvas) {
-        for (i in minY.toInt() until maxY.toInt() step (yStep / mScaleY).toInt()) {
+        val step = (yStep / mScaleY)*(maxY/minY)  //max(yStep/mScaleY,(maxY-minY)/mScaleY/yStep)//)
+
+        for (i in minY.toInt() until maxY.toInt() step step.toInt() ) {
             canvas.drawText(
                 "${(i.toFloat()).round(2)}",
                 (scrolledX.toFloat() - dpToPx(20)),
@@ -273,10 +288,11 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
     }
 
 
-     fun drawDate(canvas: Canvas) {
-         var x = (this.data.size - data.size)*xStep
-        for (i in data.indices step (verticalTextStep * mScaleX).toInt()) {
-            if (getX(x)>scrolledX-width && getX(x)<scrolledX+width) {
+    fun drawDate(canvas: Canvas) {
+        var x = (this.data.size - data.size) * xStep
+        val step = max(horizontalTextStep.toInt(), (horizontalTextStep * mScaleX).toInt())
+        for (i in data.indices step step) {
+            if (getX(x) > scrolledX - width && getX(x) < scrolledX + width) {
                 val d = data[i]
                 canvas.drawText(
                     "${d.date.toFormat()}",
@@ -285,10 +301,9 @@ open class AbstractChart(context: Context, val attrs: AttributeSet?) : View(cont
                     textPaint()
                 )
             }
-            x += xStep * (verticalTextStep * mScaleX).toInt()
+            x += xStep * (step).toInt()
         }
     }
-
 
 
     fun String.toFormat(format: String = "HH:mm"): String {

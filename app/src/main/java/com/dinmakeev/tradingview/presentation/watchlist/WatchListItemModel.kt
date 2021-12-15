@@ -35,6 +35,7 @@ data class WatchListItemModel(
         return if (!isPositive()) "-${change}%"
         else "+$change%"
     }
+    fun changeAndPercentToString() = if (data?.price==null) "" else "${changeToString()} ${percentChangeToString()}"
 
     /**
      * Только для тестинга
