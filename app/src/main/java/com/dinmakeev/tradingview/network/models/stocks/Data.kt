@@ -42,7 +42,7 @@ data class Data(
         }
         fun random(close:Double?,i:Int = 0): Data {
             val date = "2021-09-21T17:00:00.000Z"
-            val MAX = 700.0
+            val MAX = 600.0
             val MIN = 100.0
             val open = close?:Random.nextDouble(MIN,MAX)
             val low = Random.nextDouble(MIN,open)

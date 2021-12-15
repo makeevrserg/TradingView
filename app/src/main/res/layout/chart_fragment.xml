@@ -48,8 +48,9 @@
             android:text="@{viewModel.stockItem.symbol}"
             android:textAlignment="center"
             android:textColor="?colorOnPrimary"
-            android:textStyle="bold"
             android:layout_marginTop="8dp"
+            android:textStyle="normal"
+            android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView"
@@ -73,6 +74,7 @@
             android:layout_gravity="center"
             android:text="@{viewModel.stockItem.data.description}"
             android:textAlignment="center"
+            android:textSize="12sp"
             android:textColor="?subtitleTextColor"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -96,7 +98,7 @@
             android:text="@{viewModel.stockItem.getPriceOrEmpty()}"
             android:textAlignment="center"
             android:textColor="?colorOnPrimary"
-            android:textSize="30sp"
+            android:textSize="28sp"
             android:layout_marginTop="4dp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -122,7 +124,7 @@
             android:text='@{viewModel.stockItem.changeAndPercentToString()}'
             android:textAlignment="center"
             android:textColor='@{(viewModel.stockItem.isPositive())?Color.parseColor("#37A173"):Color.parseColor("#F44336")}'
-            android:textSize="15sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -130,22 +132,18 @@
             tools:text="+14.10 +0.51%" />
 
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/image_guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.5" />
+
 
         <com.dinmakeev.tradingview.chart.KChart
             android:id="@+id/kChart"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="30dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/image_guideline" />
+            app:layout_constraintTop_toBottomOf="@id/textView" />
         <!--                <WebView-->
         <!--                    android:id="@+id/webView"-->
         <!--                    android:overScrollMode="never"-->

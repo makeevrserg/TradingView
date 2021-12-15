@@ -3,7 +3,6 @@ package com.dinmakeev.tradingview.chart
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
-import android.content.res.TypedArray
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -18,6 +17,7 @@ import com.dinmakeev.tradingview.network.models.stocks.Data
 import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -58,7 +58,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
 
     var xStep: Float = dpToPx(20).toFloat()//50f
 
-    var verticalTextStep: Float = dpToPx(5).toFloat()
+    var verticalTextStep: Float = dpToPx(15).toFloat()
     var horizontalTextStep: Float = dpToPx(2).toFloat()
 
 
@@ -313,22 +313,29 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
 
 
     /**
-     * Считаем шаг по Y, с которым должны отрисовывать цены, чтобы они не наезжали друг на друга
-     * [verticalTextStep] - это минимальный отступ между двумя ценами.
-     * Чтобы посчитать адаптивный отступ - необходимо разделить на масштаб по Y, после чего умножить на разницу максимальной и минимальной цены
-     */
+     * Рисуем цены учитывая отступ. Ужасный способ, но по-другому не додумались :(
+     * */
     fun drawPriceText(canvas: Canvas) {
+
         if (data.isNullOrEmpty())
             return
-        val step =
-            ((verticalTextStep / mScaleY) * (maxY / minY)) + verticalTextStep/mScaleY+verticalTextStep
-        for (i in minY.toInt() until maxY.toInt() step step.toInt()) {
-            canvas.drawText(
-                "${(i.toFloat()).round(2)}",
-                (scrolledX.toFloat() - dpToPx(20)),
-                getY(i.toDouble()),
-                textPaint()
-            )
+        var yMargin = 0f
+        var prevY = getY(minY.toInt().toDouble())
+
+
+        for (i in minY.toInt() until maxY.toInt() step 1) {
+            val y = getY(i.toDouble())
+            if (yMargin>verticalTextStep) {
+                yMargin = 0f
+                canvas.drawText(
+                    "${(i.toFloat()).round(2)}",
+                    (scrolledX.toFloat() - dpToPx(20)),
+                    y,
+                    textPaint()
+                )
+            }
+            yMargin+=abs(y-prevY)
+            prevY = y
         }
     }
 
