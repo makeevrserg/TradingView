@@ -15,9 +15,9 @@ import kotlinx.coroutines.launch
 class ChartViewModel(application: Application) : AndroidViewModel(application) {
     val toolbarTitle = MutableLiveData<String>()
     var connection: WebSocketClient? = null
-//    var data = MutableLiveData<List<Data>>()
+    var data = MutableLiveData<List<Data>>()
 //    //Для теста графика
-    var data = MutableLiveData<List<Data>>(Data.createList(200))
+//    var data = MutableLiveData<List<Data>>(Data.createList(200))
     val newData = MutableLiveData<WatchListItemModel>()
     val repository = (application as App).repository
     val stockItem: MutableLiveData<WatchListItemModel> = MutableLiveData()
@@ -51,7 +51,7 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
         toolbarTitle.value = symbol
         viewModelScope.launch(Dispatchers.IO) {
             val fetched=repository.fetchIntraDayStock(stockItem.value?.symbol?:return@launch)?.data?: listOf()
-//            data.postValue(fetched.filter { it.volume!=null })
+            data.postValue(fetched.filter { it.volume!=null })
             connection = WebSocketClient.createConnection(
                 stockItem.value?.symbol ?: return@launch,
                 messageHandler

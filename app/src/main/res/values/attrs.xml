@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="dmChart">
-        <attr name="candleBodySize" format="dimension" />
-        <attr name="candleStringSize" format="dimension" />
-        <attr name="mTextSize" format="dimension" />
+        <attr name="candle_body_size" format="dimension" />
+        <attr name="candle_string_size" format="dimension" />
+
+        <attr name="high_color" format="color" />
+        <attr name="low_color" format="color" />
+
+        <attr name="inner_circle_color" format="color" />
+        <attr name="outer_circle_color" format="color" />
+
+        <attr name="inner_circle_size" format="dimension" />
+        <attr name="outer_circle_size" format="dimension" />
+
+        <attr name="text_size" format="dimension" />
+
         <attr name="step_x" format="dimension" />
-        <attr name="step_y" format="dimension" />
         <attr name="step_vertical_text" format="dimension" />
+        <attr name="step_horizontal_text" format="dimension" />
 
     </declare-styleable>
 </resources>
