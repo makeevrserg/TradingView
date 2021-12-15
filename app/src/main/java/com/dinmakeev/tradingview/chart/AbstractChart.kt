@@ -147,15 +147,17 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
             return
 
         calculateMinMax(list)
-        scrollToLast()
+        scrollToLast(list)
     }
-    private fun scrollToLast(){
+    private fun scrollToLast(list:List<Data>?=null){
         mScaleY = 8.0 / (maxY / minY).toDouble()
         scrollX = 0
         scrollY = 0
-        scrollBy((data.size * xStep - dpToPx(width / 4)).toInt(), 0)
+        val y = list?.lastOrNull()?.open?:data.lastOrNull()?.open?:0.0
+
+        scrollBy(((list?.size?:data.size) * xStep - dpToPx(width / 4)).toInt(), getY(y).toInt()-height/2)
         scrolledX = scrollX + width
-        scrolledY = height
+        scrolledY = scrollY+height
     }
 
     private fun calculateMinMax(list: List<Data>) {
