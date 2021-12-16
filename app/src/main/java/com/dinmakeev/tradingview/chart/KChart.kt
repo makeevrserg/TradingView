@@ -10,10 +10,6 @@ import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 
 
 class KChart(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _attrs) {
-    /**
-     * Список значений свечей
-     */
-    override var data: MutableList<Data> = mutableListOf()
 
 
     override fun update(list: List<Data>) {

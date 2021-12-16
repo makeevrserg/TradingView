@@ -12,10 +12,6 @@ import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 
 
 class KChartLine(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _attrs) {
-    /**
-     * Список значений свечей
-     */
-    override var data: MutableList<Data> = mutableListOf()//Data.createList(200)
     var isRealTime = false
 
 
