@@ -127,7 +127,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
     private var maxY: Float = 0f
     private var minY: Float = 0f
 
-    private var track:Boolean = true
+    private var track: Boolean = true
 
     open var data: MutableList<Data> = mutableListOf()
     open fun addData(_d: WatchListItemModel) {
@@ -149,15 +149,19 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
         calculateMinMax(list)
         scrollToLast(list)
     }
-    private fun scrollToLast(list:List<Data>?=null){
+
+    private fun scrollToLast(list: List<Data>? = null) {
         mScaleY = 8.0 / (maxY / minY).toDouble()
         scrollX = 0
         scrollY = 0
-        val y = list?.lastOrNull()?.open?:data.lastOrNull()?.open?:0.0
+        val y = list?.lastOrNull()?.open ?: data.lastOrNull()?.open ?: 0.0
 
-        scrollBy(((list?.size?:data.size) * xStep - dpToPx(width / 4)).toInt(), getY(y).toInt()-height/2)
+        scrollBy(
+            ((list?.size ?: data.size) * xStep - dpToPx(width / 4)).toInt(),
+            getY(y).toInt() - height / 2
+        )
         scrolledX = scrollX + width
-        scrolledY = scrollY+height
+        scrolledY = scrollY + height
     }
 
     private fun calculateMinMax(list: List<Data>) {
@@ -262,7 +266,12 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
      */
     private var mMoveDetector = GestureDetector(context, MoveListener())
 
+    private val TAG = "AbstractChart"
 
+    val plotWidth: Int
+        get() = (this.data.size * xStep).toInt()
+    val plotHeight: Int
+        get() = abs(getY(minY.toDouble()) - getY(maxY.toDouble())).toInt()
 
     private inner class MoveListener : GestureDetector.SimpleOnGestureListener() {
         override fun onScroll(
@@ -274,7 +283,20 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
             track = false
             scrolledY = scrollY + height
             scrolledX = scrollX + width
-            scrollBy(distanceX.toInt(), distanceY.toInt())
+            
+            val toScrollOnX = when {
+                (scrollX + width / 2 > plotWidth && distanceX > 0) -> 0
+                (scrollX + width / 2 < 0 && distanceX < 0) -> 0
+                else -> distanceX.toInt()
+            }
+            val toScrollOnY = when {
+                (scrollY + height / 2 < 0 && distanceY < 0) -> 0
+                (scrollY + height / 2 > plotHeight && distanceY > 0) -> 0
+                else -> distanceY.toInt()
+            }
+
+
+            scrollBy(toScrollOnX, toScrollOnY)
             return true
         }
 
@@ -303,7 +325,8 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) : View(context,
                 -(verticalTextStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(110))).toInt()
             scrollBy(0, amountY)
 
-            val amountX = (data.size*xStep * (detector.currentSpanX - detector.previousSpanX) /scrolledX/width)
+            val amountX =
+                (data.size * xStep * (detector.currentSpanX - detector.previousSpanX) / scrolledX / width)
             scrollBy(amountX.toInt(), 0)
 
             invalidate()
