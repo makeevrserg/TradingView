@@ -11,16 +11,22 @@ import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ChartViewModel(application: Application) : AndroidViewModel(application) {
     val toolbarTitle = MutableLiveData<String>()
     var connection: WebSocketClient? = null
-//    var data = MutableLiveData<List<Data>>()
+    var data = MutableLiveData<List<Data>>()
 //    //Для теста графика
-    var data = MutableLiveData<List<Data>>(Data.createList(100))
+//    var data = MutableLiveData<List<Data>>(Data.createList(100))
     val newData = MutableLiveData<WatchListItemModel>()
     val repository = (application as App).repository
     val stockItem: MutableLiveData<WatchListItemModel> = MutableLiveData()
+    val loading = MutableLiveData<Boolean>(true)
+    companion object{
+        var offset = MutableLiveData<Int>(0)
+    }
 
     val messageHandler = object : WebSocketClient.MessageHandler {
         override fun handleMessage(message: String?) {
@@ -49,14 +55,32 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
         val item = WatchListItemModel(WatchListItemModel.Data(symbol = symbol))
         stockItem.value = item
         toolbarTitle.value = symbol
+        offset.value = 0
+        loadData()
+
         viewModelScope.launch(Dispatchers.IO) {
-            val fetched=repository.fetchIntraDayStock(stockItem.value?.symbol?:return@launch)?.data?: listOf()
-            data.postValue(fetched.filter { it.volume!=null })
             connection = WebSocketClient.createConnection(
                 stockItem.value?.symbol ?: return@launch,
                 messageHandler
             )
         }
+    }
+
+    fun loadData(offset:Int = 0){
+        loading.value = true
+        viewModelScope.launch(Dispatchers.IO) {
+            stockItem.value?.symbol?.let {symbol->
+                val fetched=repository.fetchIntraDayStock(symbol,offset = offset)?.data?: listOf()
+                data.postValue(fetched.filter { it.volume!=null }.reversed())
+//                    .sortedBy {
+//                    val inputFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+//                    val d: Date? = inputFormat.parse(it.date)
+//                    d?.time
+//                })
+            }
+            loading.postValue(false)
+        }
+
     }
 
     override fun onCleared() {

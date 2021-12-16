@@ -5,10 +5,12 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import com.dinmakeev.tradingview.network.models.stocks.Data
+import com.dinmakeev.tradingview.presentation.chart.ChartViewModel
 import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -47,7 +49,6 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         var scaleFactor = 1.0
 
 
-
         /**
          * Максимальные и минимальные значения цен
          */
@@ -67,7 +68,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         get() = scrollY + height
     val scrolledX: Int
         get() = scrollX + width
-
+    var isUpdating = true
 
     open fun addData(_d: WatchListItemModel) {
         val d = Data(_d)
@@ -78,28 +79,51 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         invalidate()
     }
 
+
     /**
      * После апдейта целого списка - надо заново найти минимальные и максимальные координаты
      */
     open fun update(list: List<Data>) {
-        if (list.isNullOrEmpty())
+        if (list.isNullOrEmpty()) {
+            isUpdating = false
             return
-
+        }
+        data = if (ChartViewModel.offset.value == 0)
+            list.toMutableList()
+        else
+            list.toMutableList().apply { addAll(data) }
         calculateMinMax(list)
-        scrollToLast(list)
+        if (ChartViewModel.offset.value != 0)
+            scrollToLast(list)
+        else scrollToLast()
+        isUpdating = false
+        invalidate()
     }
 
-    private fun scrollToLast(list: List<Data>? = null) {
+    private fun scrollToLast() {
         mScaleY = 8.0 / (maxY / minY).toDouble()
         scrollX = 0
         scrollY = 0
-        val y = list?.lastOrNull()?.open ?: data.lastOrNull()?.open ?: 0.0
-
-        scrollBy(
-            ((list?.size ?: data.size) * xStep - dpToPx(width / 4)).toInt(),
-            getY(y).toInt() - height / 2
-        )
+        val y = data.lastOrNull()?.open ?: 0.0
+        val x = (data.size * xStep - width / 2).toInt()
+        val yAddition = -height / 2
+        scrollBy(x, getY(y).toInt() + yAddition)
     }
+
+    private fun scrollToLast(list: List<Data>) {
+        val x = (list.size * xStep).toInt()
+        scrollBy(x, 0)
+    }
+
+
+    val currentElement: Int
+        get() {
+            var elem = (scrollX / (plotWidth - width / 2.0) * data.size).toInt()
+            elem = min(data.size, elem)
+            elem = max(elem, 0)
+            return elem
+        }
+
 
     private fun calculateMinMax(list: List<Data>) {
         if (list.isNullOrEmpty())
@@ -116,10 +140,6 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         (height - ((height) / maxY * y)).toFloat() * mScaleY.toFloat()
 
     fun getX(x: Float) = x * mScaleX.toFloat()
-
-    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        super.onLayout(changed, left, top, right, bottom)
-    }
 
 
     /**
@@ -138,6 +158,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         get() = (data.size * xStep).toInt()
     val plotHeight: Int
         get() = abs(getY(minY.toDouble()) - getY(maxY.toDouble())).toInt()
+
 
     private inner class MoveListener : GestureDetector.SimpleOnGestureListener() {
         override fun onScroll(
@@ -159,6 +180,19 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
                 else -> distanceY.toInt()
             }
 
+            val offset = ChartViewModel.offset.value ?: 0
+
+            Log.d(
+                TAG,
+                "onScroll: distanceX:${distanceX} currentElement:${currentElement} size:${data.size} offset:${ChartViewModel.offset.value}"
+            )
+
+            if (distanceX < 0 && currentElement < min(1, data.size)) {
+                if (!isUpdating)
+                    ChartViewModel.offset.value = offset + 100
+                isUpdating = true
+            }
+
 
             scrollBy(toScrollOnX, toScrollOnY)
             return true
@@ -166,7 +200,14 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
             track = true
-            scrollToLast()
+            if (ChartViewModel.offset.value == 0)
+                scrollToLast()
+            if (ChartViewModel.offset.value != 0) {
+                if (!isUpdating) {
+                    ChartViewModel.offset.value = 0
+                    isUpdating = true
+                }
+            }
             return super.onDoubleTap(e)
         }
 
@@ -175,7 +216,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             track = false
-            val scale = dpToPx(110)
+            val scale = dpToPx(60)
             scaleFactor *= detector.scaleFactor / scale
             mScaleX += (detector.currentSpanX - detector.previousSpanX) / scrolledX
             mScaleY += (detector.currentSpanY - detector.previousSpanY) / scale
@@ -186,7 +227,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
             //После скейлинга двигаем наш view чтобы график не убегал
             val amountY =
-                -(verticalTextStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(110))).toInt()
+                -(verticalTextStep * (detector.currentSpanY - detector.previousSpanY) / (dpToPx(60))).toInt()
             scrollBy(0, amountY)
 
             val amountX =
@@ -216,11 +257,12 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             return
         var yMargin = 0f
         var prevY = getY(minY.toInt().toDouble())
+        println("MinMax=${minY} ${maxY}")
 
 
-        for (i in minY.toInt() until maxY.toInt() step 1) {
+        for (i in minY.toInt() - (maxY / minY).toInt() until maxY.toInt() + (maxY / minY).toInt() step 1) {
             val y = getY(i.toDouble())
-            if (yMargin > verticalTextStep) {
+            if (yMargin >= verticalTextStep) {
                 yMargin = 0f
                 canvas.drawText(
                     "${(i.toFloat()).round(2)}",
@@ -263,7 +305,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
 
     @SuppressLint("SimpleDateFormat")
-    private fun String.toFormat(format: String = "HH:mm"): String {
+    private fun String.toFormat(format: String = "MM-dd;HH:mm"): String {
         val inputFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         val outputFormat = SimpleDateFormat(format)
         val d: Date? = inputFormat.parse(this)

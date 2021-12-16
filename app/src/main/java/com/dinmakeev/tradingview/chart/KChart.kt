@@ -12,15 +12,6 @@ import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 class KChart(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _attrs) {
 
 
-    override fun update(list: List<Data>) {
-        super.update(list)
-        if (list.isEmpty())
-            return
-        data = list.sortedBy { it.date }.toMutableList()
-        invalidate()
-
-    }
-
     override fun addData(_d: WatchListItemModel) {}
     private val TAG = "KChart"
 

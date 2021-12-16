@@ -37,10 +37,13 @@ class ChartFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-//        val arguments = ChartFragmentArgs.fromBundle(requireArguments())
-//        viewModel.create(arguments.symbol)
+        val arguments = ChartFragmentArgs.fromBundle(requireArguments())
+        viewModel.create(arguments.symbol)
 //        // Для теста
-        viewModel.create("AAPL")
+//        viewModel.create("AAPL")
+        ChartViewModel.offset.observe(viewLifecycleOwner,{
+            viewModel.loadData(it)
+        })
         //Тут пытались сделать с помощью WebView, но эвент resize в javaScript не работал, так что не получалось нормально отрисовать
 //        binding.webView.settings.javaScriptEnabled = true
 //        binding.webView.settings.useWideViewPort = true

@@ -133,7 +133,6 @@
 
 
 
-
         <com.dinmakeev.tradingview.chart.KChartLine
             android:id="@+id/kChart"
             android:layout_width="match_parent"
@@ -144,6 +143,16 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView" />
+
+        <ProgressBar
+            android:layout_width="100dp"
+            android:layout_height="0dp"
+            android:indeterminateTint="#4477FF"
+            android:visibility="@{(viewModel.loading==true)?View.VISIBLE:View.GONE}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/kChart" />
         <!--                <WebView-->
         <!--                    android:id="@+id/webView"-->
         <!--                    android:overScrollMode="never"-->

@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import com.dinmakeev.tradingview.network.models.stocks.Data
+import com.dinmakeev.tradingview.presentation.chart.ChartViewModel
 import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 
 
@@ -16,19 +17,15 @@ class KChartLine(context: Context, _attrs: AttributeSet?) : AbstractChart(contex
 
 
     override fun addData(_d: WatchListItemModel) {
+        if (ChartViewModel.offset.value!=0)
+            return
         if (_d.data.price == null)
             return
         isRealTime = true
         super.addData(_d)
     }
 
-    override fun update(list: List<Data>) {
-        super.update(list)
-        if (list.isEmpty())
-            return
-        data = list.sortedBy { it.date }.toMutableList()
-        invalidate()
-    }
+
 
     private val TAG = "KChart"
 
@@ -67,7 +64,7 @@ class KChartLine(context: Context, _attrs: AttributeSet?) : AbstractChart(contex
 
         }
         val last = data.last()
-        val yCoord = if (!isRealTime) getY(last.open) else getY(last.close)
+        val yCoord = if (!isRealTime) getY(last.open) else getY(last.open)
         canvas.drawCircle(
             getX(x),
             yCoord,
