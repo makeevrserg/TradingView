@@ -4,11 +4,11 @@ import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.*
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -26,13 +26,14 @@ class ChartFragment : Fragment() {
     }
 
     var loadedWebView:WebView?=null
+    lateinit var binding:ChartFragmentBinding
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         //Binding
-        val binding: ChartFragmentBinding =
+        binding =
             DataBindingUtil.inflate(inflater, R.layout.chart_fragment, container, false)
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
@@ -44,37 +45,7 @@ class ChartFragment : Fragment() {
         ChartViewModel.offset.observe(viewLifecycleOwner,{
             viewModel.loadData(it)
         })
-        //Тут пытались сделать с помощью WebView, но эвент resize в javaScript не работал, так что не получалось нормально отрисовать
-//        binding.webView.settings.javaScriptEnabled = true
-//        binding.webView.settings.useWideViewPort = true
-//        binding.webView.settings.loadWithOverviewMode= true
-//        binding.webView.settings.builtInZoomControls = true
-//        binding.webView.settings.displayZoomControls = false
-//        binding.webView.settings.setSupportZoom(true)
-//        binding.webView.isHorizontalScrollBarEnabled = true
-//        binding.webView.isVerticalScrollBarEnabled = true
-//        binding.webView.isScrollbarFadingEnabled = true
-//        binding.webView.setBackgroundColor(Color.TRANSPARENT)
-//        binding.webView.settings.layoutAlgorithm = WebSettings.LayoutAlgorithm.SINGLE_COLUMN
-//        binding.webView.webViewClient = object: WebViewClient(){
-//            override fun onScaleChanged(view: WebView?, oldScale: Float, newScale: Float) {
-//                Log.d("Repository", "onScaleChanged: oldScale = ${oldScale} newScale=${newScale}")
-//                super.onScaleChanged(view, oldScale, newScale)
-//            }
-//            override fun onPageFinished(view: WebView?, url: String?) {
-//                super.onPageFinished(view, url)
-//                loadedWebView = view
-//                loadData()
-//            }
-//        }
-//        binding.webView.loadUrl("file:///android_asset/plot/graph.html")
-//        binding.webView.webChromeClient = object :WebChromeClient(){
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
-//
-//                Log.d("Repository", "onConsoleMessage: ${consoleMessage?.message()}")
-//                return super.onConsoleMessage(consoleMessage)
-//            }
-//        }
+        setHasOptionsMenu(true)
 
 
         viewModel.toolbarTitle.observe(viewLifecycleOwner, {
@@ -88,16 +59,21 @@ class ChartFragment : Fragment() {
         })
         return binding.root
     }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.action_zoom -> {
+                ChartViewModel.offset.value = 0
+                return true
+            }
 
-//    fun loadData(_data:List<Data>?=null){
-//        val data = _data?:viewModel.data.value
-//        if (data.isNullOrEmpty())
-//            return
-//
-//        loadedWebView?.evaluateJavascript("_loadData(${Gson().toJson(data)});", ValueCallback {
-//            Log.d("Repository", "onevaluateJavascriptMessage: ${it}")
-//        })
-//    }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.chart_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
 
 }

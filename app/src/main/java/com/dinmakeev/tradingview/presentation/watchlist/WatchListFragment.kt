@@ -81,6 +81,7 @@ class WatchListFragment : Fragment() {
                 }
 
                 adapter.submitList(it)
+                adapter.filter.filter(filterString)
             }
         })
 
@@ -94,6 +95,11 @@ class WatchListFragment : Fragment() {
         return binding.root
     }
 
+    /**
+     * Надо запомнить, чтобы после смены списка новый список тоже отильтровался
+     */
+    var filterString:String=""
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.watchlist_menu, menu)
@@ -101,11 +107,13 @@ class WatchListFragment : Fragment() {
         val searchView = menuItem.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
+                filterString=p0?:""
                 adapter.filter.filter(p0 ?: return false)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
+                filterString=p0?:""
                 adapter.filter.filter(p0 ?: return false)
                 return true
             }

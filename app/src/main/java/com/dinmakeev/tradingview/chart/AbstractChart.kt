@@ -95,7 +95,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             list.toMutableList()
         else
             list.toMutableList().apply { addAll(data) }
-        calculateMinMax(list)
+        calculateMinMax(data)
         if (ChartViewModel.offset.value != 0)
             scrollToLast(list)
         else scrollToLast()

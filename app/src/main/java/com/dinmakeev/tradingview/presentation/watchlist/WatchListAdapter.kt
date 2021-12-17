@@ -40,8 +40,10 @@ class WatchListAdapter(
         fun bind(item: WatchListItemModel) {
             binding.viewModel = factory(item)
             binding.lifecycleOwner = this@WatchListAdapter.lifecycleOwner
-            if (item==constList.lastOrNull())
+            if (item.symbol==refList.lastOrNull()?.symbol)
                 binding.placeholder.visibility = View.GONE
+            else
+                binding.placeholder.visibility = View.VISIBLE
             binding.executePendingBindings()
         }
 
@@ -79,7 +81,7 @@ class WatchListAdapter(
             override fun performFiltering(charSequence: CharSequence?): Filter.FilterResults {
                 return FilterResults().apply {
                     values = constList.filter { it ->
-                        it.symbol.contains(charSequence ?: "")  || (it.data.description?.contains(charSequence ?: "")==true)
+                        it.symbol.contains(charSequence ?: "",ignoreCase = true)  || (it.data.description?.contains(charSequence ?: "",ignoreCase = true)==true)
                     }
                 }
             }
