@@ -9,6 +9,37 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'androidx.navigation.safeargs'
 
 android {
+    def versionPropsFile = file('version.properties')
+    def versionBuildDebug
+    if (versionPropsFile.canRead()) {
+        def Properties versionProps = new Properties()
+        versionProps.load(new FileInputStream(versionPropsFile))
+        versionBuildDebug = versionProps['VERSION_BUILD_DEBUG'].toInteger()
+
+        defaultConfig {
+            versionCode versionBuildDebug
+            versionName versionProps['VERSION_BUILD_DEBUG']
+        }
+    } else {
+        throw new FileNotFoundException("Could not read version.properties!")
+    }
+    gradle.taskGraph.whenReady {taskGraph ->
+        if (taskGraph.hasTask(assembleDebug)){
+            autoIncrementBuildNumber('VERSION_BUILD_DEBUG')
+        }
+    }
+    ext.autoIncrementBuildNumber = {versionPropsValue ->
+        if (versionPropsFile.canRead()) {
+            def versionProps = new Properties()
+            versionProps.load(new FileInputStream(versionPropsFile))
+            def code = versionProps[versionPropsValue].toInteger() + 1
+            versionProps[versionPropsValue] = code.toString()
+            versionProps.store(versionPropsFile.newWriter(), null)
+        } else {
+            throw new FileNotFoundException("Could not read version.properties!")
+        }
+    }
+
     compileSdk 31
 
     defaultConfig {
@@ -29,6 +60,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        applicationVariants.all { variant ->
+            variant.outputs.all { output ->
+                if (variant.name == "debug")
+                    outputFileName = "tradingview-${variant.name}-${versionBuildDebug}.apk"
+            }
         }
     }
     compileOptions {

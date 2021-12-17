@@ -58,7 +58,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
     private var maxY: Float = 0f
     private var minY: Float = 0f
 
-    private var track: Boolean = true
+    var track: Boolean = true
 
     var data: MutableList<Data> = mutableListOf()
     /**
@@ -203,20 +203,23 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         }
 
         override fun onDoubleTap(e: MotionEvent?): Boolean {
-            track = true
-            if (ChartViewModel.offset.value == 0)
-                scrollToLast()
-            if (ChartViewModel.offset.value != 0) {
-                if (!isUpdating) {
-                    ChartViewModel.offset.value = 0
-                    isUpdating = true
-                }
-            }
+            reset()
             return super.onDoubleTap(e)
         }
 
     }
+    fun reset(){
 
+        track = true
+        if (ChartViewModel.offset.value == 0)
+            scrollToLast()
+        if (ChartViewModel.offset.value != 0) {
+            if (!isUpdating) {
+                ChartViewModel.offset.value = 0
+                isUpdating = true
+            }
+        }
+    }
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             track = false

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import com.dinmakeev.tradingview.network.models.stocks.Data
 import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 
 
@@ -23,22 +24,37 @@ class KChart(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _
         drawDate(canvas)
 
     }
-
     private fun drawPlot(canvas: Canvas) {
         var x = 0f
         for (i in data.indices) {
-            if (isXInView(x)) {
+
+            if (getX(x) > scrolledX - width-xStep && getX(x) < scrolledX + width+xStep) {
                 val d = data[i]
-                val candlePaint = if (d.isHigh()) candleHighPaint() else candleLowPaint()
-                val smallPaint = if (d.isHigh()) candleHighPaintSmall() else candleLowPaintSmall()
-                canvas.drawLine(getX(x), getY(d.close), getX(x), getY(d.open), candlePaint)
-                canvas.drawLine(
-                    getX(x),
-                    getY(d.low),
-                    getX(x),
-                    getY(d.high),
-                    smallPaint
-                )
+                if (d.isHigh()) {
+                    canvas.drawLine(
+                        getX(x),
+                        getY(d.close),
+                        getX(x),
+                        getY(d.open),
+                        candleHighPaint()
+                    )
+                    canvas.drawLine(
+                        getX(x),
+                        getY(d.low),
+                        getX(x),
+                        getY(d.high),
+                        candleHighPaintSmall()
+                    )
+                } else {
+                    canvas.drawLine(getX(x), getY(d.close), getX(x), getY(d.open), candleLowPaint())
+                    canvas.drawLine(
+                        getX(x),
+                        getY(d.low),
+                        getX(x),
+                        getY(d.high),
+                        candleLowPaintSmall()
+                    )
+                }
             }
             x += xStep
         }

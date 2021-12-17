@@ -62,7 +62,8 @@ class ChartFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_zoom -> {
-                ChartViewModel.offset.value = 0
+
+                binding.kChart.reset()
                 return true
             }
 
