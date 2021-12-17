@@ -16,6 +16,9 @@ class App : Application() {
         val isLoading = MutableLiveData(true)
     }
 
+    /**
+     * Вообще такие штуки наверное лучше сделать через ROOM
+     */
     inner class DataManager {
         private fun getSharedPref(): SharedPreferences? = try {
             getSharedPreferences(

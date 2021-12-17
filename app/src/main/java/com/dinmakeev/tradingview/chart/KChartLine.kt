@@ -49,7 +49,7 @@ class KChartLine(context: Context, _attrs: AttributeSet?) : AbstractChart(contex
         var x = 0f
         for (i in 0 until data.size - 1) {
 
-            if (getX(x)>scrolledX-width-xStep && getX(x)<scrolledX+width+xStep) {
+            if (isXInView(x)) {
                 val d = data[i]
                 val nd = data[i + 1]
                 canvas.drawLine(

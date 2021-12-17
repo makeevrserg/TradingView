@@ -37,30 +37,30 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             return (spValue * fontScale + 0.5f).toInt()
         }
 
-        /**
-         * Scale по X,Y
-         */
-        var mScaleX = 1.0
-        var mScaleY = 1.0
-
-        /**
-         * Общий Scale
-         */
-        var scaleFactor = 1.0
-
-
-        /**
-         * Максимальные и минимальные значения цен
-         */
-        private var maxY: Float = 0f
-        private var minY: Float = 0f
-
-        private var track: Boolean = true
-
-        var data: MutableList<Data> = mutableListOf()
     }
 
 
+    /**
+     * Scale по X,Y
+     */
+    var mScaleX = 1.0
+    var mScaleY = 1.0
+
+    /**
+     * Общий Scale
+     */
+    var scaleFactor = 1.0
+
+
+    /**
+     * Максимальные и минимальные значения цен
+     */
+    private var maxY: Float = 0f
+    private var minY: Float = 0f
+
+    private var track: Boolean = true
+
+    var data: MutableList<Data> = mutableListOf()
     /**
      * Параметр хранит перемещение по X,Y
      */
@@ -70,6 +70,9 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         get() = scrollX + width
     var isUpdating = true
 
+    /**
+     * Добавление данных, которые приходят через веб-сокет
+     */
     open fun addData(_d: WatchListItemModel) {
         val d = Data(_d)
         data.add(d)
@@ -105,7 +108,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         scrollX = 0
         scrollY = 0
         val y = data.lastOrNull()?.open ?: 0.0
-        val x = (data.size * xStep - width / 2).toInt()
+        val x = (plotWidth - width / 2).toInt()
         val yAddition = -height / 2
         scrollBy(x, getY(y).toInt() + yAddition)
     }
@@ -116,6 +119,10 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
     }
 
 
+    /**
+     * Тут мы получаем позицию элемента, который находится в центре экрана
+     * Либо 0 или data.size если мы вышли за границы
+     */
     val currentElement: Int
         get() {
             var elem = (scrollX / (plotWidth - width / 2.0) * data.size).toInt()
@@ -141,6 +148,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
     fun getX(x: Float) = x * mScaleX.toFloat()
 
+    fun isXInView(x:Float) = getX(x) > scrolledX - width - xStep && getX(x) < scrolledX + width + xStep
 
     /**
      * Слушатель жестов масштабирования
@@ -154,8 +162,11 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
     private val TAG = "AbstractChart"
 
+    /**
+     * Настоящая ширина и высота графика
+     */
     val plotWidth: Int
-        get() = (data.size * xStep).toInt()
+        get() = (data.size * xStep/mScaleX).toInt()
     val plotHeight: Int
         get() = abs(getY(minY.toDouble()) - getY(maxY.toDouble())).toInt()
 
@@ -168,12 +179,13 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             distanceY: Float
         ): Boolean {
             track = false
-
+            //Проверям, чтоб мы не вышли за границы X
             val toScrollOnX = when {
                 (scrollX + width / 2 > plotWidth && distanceX > 0) -> 0
                 (scrollX + width / 2 < 0 && distanceX < 0) -> 0
                 else -> distanceX.toInt()
             }
+            //Проверям, чтоб мы не вышли за границы Y
             val toScrollOnY = when {
                 (scrollY + height / 2 < 0 && distanceY < 0) -> 0
                 (scrollY + height / 2 > plotHeight && distanceY > 0) -> 0
@@ -181,19 +193,11 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             }
 
             val offset = ChartViewModel.offset.value ?: 0
-
-            Log.d(
-                TAG,
-                "onScroll: distanceX:${distanceX} currentElement:${currentElement} size:${data.size} offset:${ChartViewModel.offset.value}"
-            )
-
-            if (distanceX < 0 && currentElement < min(1, data.size)) {
+            if (distanceX < 0 && currentElement < min(15, data.size)) {
                 if (!isUpdating)
                     ChartViewModel.offset.value = offset + 100
                 isUpdating = true
             }
-
-
             scrollBy(toScrollOnX, toScrollOnY)
             return true
         }
@@ -305,7 +309,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
 
     @SuppressLint("SimpleDateFormat")
-    private fun String.toFormat(format: String = "MM-dd;HH:mm"): String {
+    private fun String.toFormat(format: String = "HH:mm"): String {
         val inputFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         val outputFormat = SimpleDateFormat(format)
         val d: Date? = inputFormat.parse(this)
