@@ -166,7 +166,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
      * Настоящая ширина и высота графика
      */
     val plotWidth: Int
-        get() = (data.size * xStep/mScaleX).toInt()
+        get() = (data.size * xStep*mScaleX).toInt()
     val plotHeight: Int
         get() = abs(getY(minY.toDouble()) - getY(maxY.toDouble())).toInt()
 
