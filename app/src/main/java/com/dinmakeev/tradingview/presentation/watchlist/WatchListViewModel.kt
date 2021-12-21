@@ -83,11 +83,13 @@ class WatchListViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+
+
     fun onSwiped(adapterPosition: Int) {
         val watchListItem = _watchListItems.value?.elementAt(adapterPosition)
         _watchListItems.value?.removeAt(adapterPosition)
         viewModelScope.launch(Dispatchers.IO) {
-            WebSocketClient.closeConnections(listOfNotNull(watchListItem?.symbol))
+            WebSocketClient.closeCachedConnection(watchListItem?.symbol)
         }
         app.DataManager().removeSymbolFromList(currentWatchList?.name ?: return, watchListItem?.symbol ?: return)
     }

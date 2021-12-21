@@ -40,7 +40,7 @@
             android:background="@drawable/circle"
             android:layout_marginTop="15dp"
             android:translationZ="-10dp"
-            android:visibility="@{(viewModel.trackItem.data.bitmap!=null)?View.VISIBLE:View.GONE}"
+            android:visibility="@{(viewModel.stockItem.data.bitmap!=null)?View.VISIBLE:View.GONE}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -50,7 +50,7 @@
             android:layout_height="36dp"
             android:padding="6dp"
             android:layout_marginStart="15dp"
-            android:bitmap="@{viewModel.trackItem.data.bitmap}"
+            android:bitmap="@{viewModel.stockItem.data.bitmap}"
             android:layout_marginTop="15dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -61,7 +61,7 @@
             android:layout_height="36dp"
             android:indeterminateTint="#4477FF"
             android:translationZ="-10dp"
-            android:visibility="@{(viewModel.trackItem.data.bitmap==null)?View.VISIBLE:View.GONE}"
+            android:visibility="@{(viewModel.stockItem.data.bitmap==null)?View.VISIBLE:View.GONE}"
             app:layout_constraintStart_toStartOf="@+id/imageViewLogo"
             app:layout_constraintTop_toTopOf="@+id/imageViewLogo" />
 
@@ -72,7 +72,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-light"
-            android:text="@{viewModel.trackItem.symbol}"
+            android:text="@{viewModel.stockItem.symbol}"
             android:textColor="?colorOnPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -86,7 +86,7 @@
             android:layout_height="0dp"
             android:indeterminateTint="#4477FF"
             android:translationZ="-10dp"
-            android:visibility="@{(viewModel.trackItem.data.description==null)?View.VISIBLE:View.GONE}"
+            android:visibility="@{(viewModel.stockItem.data.description==null)?View.VISIBLE:View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/textView2"
             app:layout_constraintStart_toStartOf="@+id/textView2"
             app:layout_constraintTop_toTopOf="@+id/textView2" />
@@ -97,7 +97,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
             android:layout_marginTop="4dp"
-            android:text="@{viewModel.trackItem.data.description}"
+            android:text="@{viewModel.stockItem.data.description}"
             android:textColor="?subtitleTextColor"
             android:textSize="12sp"
             app:layout_constraintStart_toEndOf="@+id/imageViewLogo"
@@ -111,7 +111,7 @@
             android:layout_marginTop="9dp"
             android:layout_marginEnd="16dp"
             android:fontFamily="sans-serif-light"
-            android:text="@{viewModel.trackItem.priceOrEmpty}"
+            android:text="@{viewModel.stockItem.priceOrEmpty}"
             android:textColor="?colorOnPrimary"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -127,8 +127,8 @@
             android:layout_marginTop="4dp"
             android:fontFamily="sans-serif-medium"
             android:letterSpacing="0.05"
-            android:text="@{viewModel.trackItem.changeAndPercentToString()}"
-            android:textColor='@{(viewModel.trackItem.isPositive()==true)?Color.parseColor("#009688"):Color.parseColor("#F44336")}'
+            android:text="@{viewModel.stockItem.changeAndPercentToString()}"
+            android:textColor='@{(viewModel.stockItem.isPositive()==true)?Color.parseColor("#009688"):Color.parseColor("#F44336")}'
             android:textSize="15sp"
             app:layout_constraintEnd_toEndOf="@+id/textView4"
             app:layout_constraintTop_toBottomOf="@+id/textView4"
@@ -142,7 +142,7 @@
             android:layout_height="0dp"
             android:indeterminateTint="#4477FF"
             android:translationZ="-10dp"
-            android:visibility="@{(viewModel.trackItem.data.price==null)?View.VISIBLE:View.GONE}"
+            android:visibility="@{(viewModel.stockItem.data.price==null)?View.VISIBLE:View.GONE}"
             app:layout_constraintBottom_toBottomOf="@+id/imageViewLogo"
             app:layout_constraintEnd_toEndOf="@+id/textView4"
             app:layout_constraintTop_toTopOf="@+id/textView4" />

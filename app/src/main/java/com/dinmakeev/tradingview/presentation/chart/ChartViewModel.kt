@@ -33,13 +33,9 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
     val messageHandler = object : WebSocketClient.MessageHandler {
         override suspend fun handleMessage(message: String?) {
             Log.d("Repository", "handleMessage: ${stockItem.value?.symbol}: ${message}")
-            if (message?.contains("Pong is not received") == true || message?.contains("error") == true) {
+            if (message?.contains("Pong is not received") == true) {
                 connection?.openConnection()
-                connection?.sendMessage(
-                    WebSocketClient.getMessage(
-                        stockItem.value?.symbol ?: return
-                    )
-                )
+                connection?.subscribe(stockItem.value?.symbol ?: return)
                 return
             }
             catching {
@@ -59,9 +55,6 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
         stockItem.value = item
         toolbarTitle.value = symbol
         offset.value = 0
-        viewModelScope.launch(Dispatchers.IO) {
-            suspendLoadData()
-        }
     }
 
     private suspend fun connectWebSocket() {
@@ -71,12 +64,8 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    fun loadData(offset: Int=0){
-        viewModelScope.launch(Dispatchers.IO) {
-            suspendLoadData(offset)
-        }
-    }
-    suspend fun suspendLoadData(offset: Int = 0) {
+
+    suspend fun loadData(offset: Int = 0) {
         var offset = offset
         if (offset != 0 && data.value.isNullOrEmpty()) {
             offset = 0

@@ -13,9 +13,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.dinmakeev.tradingview.R
-import com.dinmakeev.tradingview.application.App
 import com.dinmakeev.tradingview.databinding.WatchListFragmentBinding
 import com.dinmakeev.tradingview.network.WebSocketClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
@@ -30,17 +30,21 @@ class WatchListFragment : Fragment() {
     }
 
     override fun onResume() {
-        WebSocketClient.resumeAll()
+        lifecycleScope.launch(Dispatchers.IO) {
+            WebSocketClient.resumeCached()
+        }
         super.onResume()
     }
 
     override fun onPause() {
-        WebSocketClient.pauseAll()
+        lifecycleScope.launch(Dispatchers.IO) {
+            WebSocketClient.pauseCached()
+        }
         super.onPause()
     }
 
     /**
-     * Указываем на lifecycleOwner целую активити потому что после onPause/onResume ссылка на lifecycleOwner меняется и данные перестают обновляться
+     * Указываем на lifecycleOwner целую активити потому что после onPause/onResume ссылка на lifecycleOwner меняется и данные перестают обновляться и вообще вызывается onDestroy
      *
      * делаем кучу отдельных viewModel для каждого элемента потому что если сдеалть одно соединение, то эдементы recyclerView будут некрасиво обновляться
      */
@@ -76,12 +80,14 @@ class WatchListFragment : Fragment() {
         //viewModel.observe
         viewModel.watchListItem.observe(viewLifecycleOwner, {
             it?.let {
+                //Тут нам нужно почистить и отключить все закешированные соединения
+                //Чтобы не приходили данные, которые уже не нужны
                 lifecycleScope.launch {
-                    WebSocketClient.closeConnectionsIfNotInList(it.map { s -> s.symbol })
+                    WebSocketClient.clearCached()
                 }
-
                 adapter.submitList(it)
-                adapter.filter.filter(filterString)
+                if (filterString.isNotBlank() && filterString.isNotEmpty())
+                    adapter.filter.filter(filterString)
             }
         })
 
@@ -98,7 +104,7 @@ class WatchListFragment : Fragment() {
     /**
      * Надо запомнить, чтобы после смены списка новый список тоже отильтровался
      */
-    var filterString:String=""
+    var filterString: String = ""
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -107,13 +113,13 @@ class WatchListFragment : Fragment() {
         val searchView = menuItem.actionView as SearchView
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
-                filterString=p0?:""
+                filterString = p0 ?: ""
                 adapter.filter.filter(p0 ?: return false)
                 return true
             }
 
             override fun onQueryTextChange(p0: String?): Boolean {
-                filterString=p0?:""
+                filterString = p0 ?: ""
                 adapter.filter.filter(p0 ?: return false)
                 return true
             }
@@ -163,6 +169,9 @@ class WatchListFragment : Fragment() {
             return false
         }
 
+        /**
+         * После свайпа надо отключить соединение
+         */
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
             viewModel.onSwiped(viewHolder.adapterPosition)
             adapter.notifyItemRemoved(viewHolder.adapterPosition)

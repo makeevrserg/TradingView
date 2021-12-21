@@ -1,6 +1,6 @@
 package com.dinmakeev.tradingview.network
 
-import android.util.Log
+import com.dinmakeev.tradingview.application.App
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,55 +13,58 @@ class WebSocketClient(val endpointURI: URI?) {
 
     companion object {
 
-        val symbolMap: MutableMap<String, WebSocketClient> = mutableMapOf()
+        private val cache = mutableListOf<Pair<String,WebSocketClient>>()
+        private val cachedList: List<Pair<String,WebSocketClient>>
+            get() = synchronized(App) {
+                cache
+            }
 
         /**
          * Создаем соединение или передаем ссылку на него, если уже существует
          */
         fun createConnection(symbol: String, messageHandler: MessageHandler): WebSocketClient {
-            val client = symbolMap[symbol] ?: WebSocketClient()
-            client.closeConnection()
-            client.openConnection()
-            client.sendMessage(getMessage(symbol))
+            val client = WebSocketClient()
+            client.subscribe(symbol)
             client.addMessageHandler(messageHandler)
-            symbolMap[symbol] = client
             return client
         }
 
-        /**
-         * Закрываем соединения для всех котировок, которые присутсвуют в текущем списке
-         */
-        fun closeConnections(symbol: List<String>) {
-            symbolMap.filter { symbol.contains(it.key) }.forEach { (s, client) ->
-                client.closeConnection()
-                symbolMap.remove(s)
+
+
+
+        fun getOrCreateConnection(symbol: String, messageHandler: MessageHandler): WebSocketClient {
+            val client = cachedList.firstOrNull { it.first==symbol }?.second
+            client?.addMessageHandler(messageHandler)
+            return client?: createConnection(symbol, messageHandler)
+        }
+        suspend fun pauseCached() {
+            cachedList.forEach{it.second.closeConnection()}
+        }
+        suspend fun resumeCached(){
+            cachedList.forEach {
+                it.second.openConnection()
+                it.second.subscribe(it.first)
             }
         }
-
-        /**
-         * Закрываем соединения для всех котировок, которые не содержатся в текущем переданном листе
-         */
-        fun closeConnectionsIfNotInList(symbols: List<String>) {
-            symbolMap.filter { !symbols.contains(it.key) }
-                .forEach { (s, client) ->
-                    client.closeConnection()
-                    symbolMap.remove(s)
-                }
+        suspend fun addToCache(symbol: String?,socket:WebSocketClient?) = synchronized(App){
+            cache.add(Pair(symbol?:return@synchronized,socket?:return@synchronized ))
         }
-
+        suspend fun closeCachedConnection(symbol: String?) = synchronized(App){
+            val pair= cachedList.firstOrNull { it.first==symbol }?:return@synchronized
+            cache.remove(pair)
+            pair.second.closeConnection()
+        }
+        suspend fun clearCached(){
+            val list = cachedList.toList()
+            cache.clear()
+            list.forEach {
+                it.second.closeConnection()
+            }
+        }
         fun getMessage(symbol: String) =
             "{\"command\": \"subscribe_symbols\", \"payload\": [\"${symbol}\"]}"
 
-        fun resumeAll() {
-            symbolMap.forEach { (symbol, client) ->
-                client.openConnection()
-                client.sendMessage(getMessage(symbol))
-            }
-        }
 
-        fun pauseAll() {
-            symbolMap.forEach { symbol, client -> client.closeConnection() }
-        }
     }
 
 
@@ -105,6 +108,9 @@ class WebSocketClient(val endpointURI: URI?) {
         messageHandler = msgHandler
     }
 
+    fun subscribe(symbol: String?) {
+        sendMessage(getMessage(symbol ?: return))
+    }
 
     fun sendMessage(message: String?) {
         if (userSession == null) {

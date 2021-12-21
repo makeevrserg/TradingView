@@ -8,8 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.dinmakeev.tradingview.R
 import com.dinmakeev.tradingview.databinding.ChartFragmentBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ChartFragment : Fragment() {
 
@@ -35,7 +38,9 @@ class ChartFragment : Fragment() {
 //        // Для теста
 //        viewModel.create("AAPL")
         ChartViewModel.offset.observe(viewLifecycleOwner,{
-            viewModel.loadData(it)
+            lifecycleScope.launch(Dispatchers.IO) {
+                viewModel.loadData(it)
+            }
         })
         setHasOptionsMenu(true)
 

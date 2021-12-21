@@ -267,7 +267,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         println("MinMax=${minY} ${maxY}")
 
 
-        for (i in minY.toInt() - (maxY / minY).toInt() until maxY.toInt() + (maxY / minY).toInt() step 1) {
+        for (i in minY.toInt() - (maxY / minY*mScaleY).toInt() until maxY.toInt() + (maxY / minY*mScaleY).toInt() step 1) {
             val y = getY(i.toDouble())
             if (yMargin >= verticalTextStep) {
                 yMargin = 0f
@@ -296,11 +296,19 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             return
         var x = 0f
         val step = max(horizontalTextStep.toInt(), (horizontalTextStep * mScaleX).toInt())
-        for (i in data.indices step step.toInt()) {
+        var futureTime = 0L
+        val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        for (i in 0 until data.size+(step*mScaleX).toInt() step step.toInt()) {
             if (getX(x) > scrolledX - width && getX(x) < scrolledX + width) {
-                val d = data[i]
+                var d = data.elementAtOrNull(i)?.date
+                if (d==null) {
+                    val time = System.currentTimeMillis()+futureTime
+                    futureTime+=1000
+                    d = format.format(Date(time))
+
+                }
                 canvas.drawText(
-                    d.date.toFormat(),
+                    d!!.toFormat(),
                     getX(x),
                     -dpToPx(5).toFloat() + scrolledY,
                     textPaint()

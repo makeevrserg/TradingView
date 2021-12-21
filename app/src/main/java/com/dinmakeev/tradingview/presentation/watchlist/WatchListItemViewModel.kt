@@ -23,22 +23,16 @@ class WatchListItemViewModel(
     val app = application as App
     val repository = app.repository
 
-    val trackItem: MutableLiveData<WatchListItemModel> = MutableLiveData(_trackItem)
+    val stockItem: MutableLiveData<WatchListItemModel> = MutableLiveData(_trackItem)
 
     var connection: WebSocketClient? = null
-    var listener: Any? = null
-
 
     val messageHandler = object : WebSocketClient.MessageHandler {
         override suspend fun handleMessage(message: String?) {
-            Log.d("Repository", "handleMessage: ${trackItem.value?.symbol}: ${message}")
+            Log.d("Repository", "handleMessage: ${stockItem.value?.symbol}: ${message}")
             if (message?.contains("Pong is not received") == true) {
                 connection?.openConnection()
-                connection?.sendMessage(
-                    WebSocketClient.getMessage(
-                        trackItem.value?.symbol ?: return
-                    )
-                )
+                connection?.subscribe(stockItem.value?.symbol ?: return)
                 return
             }
 
@@ -46,9 +40,9 @@ class WatchListItemViewModel(
                 val watchListItem =
                     Gson().fromJson<WatchListItemModel>(message, WatchListItemModel::class.java)
                 watchListItem.data.bitmap = repository.fetchIcon(watchListItem.symbol)
-                val item = trackItem.value ?: return@catching
+                val item = stockItem.value ?: return@catching
                 item.updateData(watchListItem)
-                trackItem.postValue(item)
+                stockItem.postValue(item)
             }
 
 
@@ -57,35 +51,36 @@ class WatchListItemViewModel(
     }
 
     fun clicked() {
-        val item = trackItem.value
+        val item = stockItem.value
         if (item == null) {
             App._notifyMessage.value = MessageHandler("Данные еще не загрузились")
             return
         }
-        onTrackClicked(trackItem.value ?: return)
+        onTrackClicked(stockItem.value ?: return)
     }
 
+    /**
+     * Создаем не новое соединение, а пытаемся получить старое, потому что при фильтре будут создаваться новые viewModel с новыми подключениями.
+     *
+     * Таким образом избегаем этого
+     */
     fun connectWebSocket() =
         viewModelScope.launch(Dispatchers.IO) {
-            if (connection == null)
-                connection = WebSocketClient.createConnection(
-                    trackItem.value?.symbol ?: return@launch,
-                    messageHandler
-                )
-            else {
-                connection?.openConnection()
-                connection?.sendMessage(
-                    WebSocketClient.getMessage(
-                        trackItem.value?.symbol ?: return@launch
-                    )
-                )
-            }
+            connection = WebSocketClient.getOrCreateConnection(
+                stockItem.value?.symbol ?: return@launch,
+                messageHandler
+            )
+            WebSocketClient.addToCache(stockItem.value?.symbol, connection)
+
         }
 
 
-    init {
-        Log.d("Repository", ": Init")
-        connectWebSocket()
+    override fun onCleared() {
+        super.onCleared()
+        connection?.closeConnection()
+    }
 
+    init {
+        connectWebSocket()
     }
 }

@@ -13,7 +13,7 @@ import com.dinmakeev.tradingview.databinding.WatchItemBinding
 
 
 class WatchListAdapter(
-    private val lifecycleOwner: LifecycleOwner,
+    private val activityLifecycle: LifecycleOwner,
     private val factory: (WatchListItemModel) -> WatchListItemViewModel
 ) : ListAdapter<WatchListItemModel, WatchListAdapter.ViewHolder>(DIFF_CALLBACK),Filterable {
     companion object {
@@ -39,7 +39,7 @@ class WatchListAdapter(
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: WatchListItemModel) {
             binding.viewModel = factory(item)
-            binding.lifecycleOwner = this@WatchListAdapter.lifecycleOwner
+            binding.lifecycleOwner = this@WatchListAdapter.activityLifecycle
             if (item.symbol==refList.lastOrNull()?.symbol)
                 binding.placeholder.visibility = View.GONE
             else

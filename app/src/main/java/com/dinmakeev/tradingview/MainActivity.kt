@@ -38,19 +38,5 @@ class MainActivity : AppCompatActivity() {
         return NavigationUI.navigateUp(navController, null)
     }
 
-    /**
-     * Тут мы мониторим веб-сокеты. При сворачивании/разворачивании - паузим/вохобновляем все соединения
-     */
-    override fun onResume() {
-        super.onResume()
-        lifecycleScope.launch(Dispatchers.IO) {
-            WebSocketClient.resumeAll()
-        }
-    }
-    override fun onPause() {
-        super.onPause()
-        lifecycleScope.launch(Dispatchers.IO) {
-            WebSocketClient.pauseAll()
-        }
-    }
+
 }
