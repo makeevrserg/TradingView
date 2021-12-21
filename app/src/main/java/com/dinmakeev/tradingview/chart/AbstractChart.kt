@@ -280,12 +280,12 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         var yMargin = 0f
         var prevY = getY(minY.toInt().toDouble())
 
-        val start = minY.toInt() - (maxY / minY * mScaleY).toInt() - (maxY / minY / mScaleY).toInt()
-        val end = maxY.toInt() + (maxY / minY * mScaleY).toInt() + (maxY / minY / mScaleY).toInt()
+        val start = minY - (maxY / minY * mScaleY) - (maxY / minY / mScaleY)
+        val end = maxY + (maxY / minY * mScaleY) + (maxY / minY / mScaleY)
         val step = if (mScaleY < 1) 1 * mScaleY else 1 / mScaleY
 
-        for (i in start.toDouble()..end.toDouble() step (step)) {
-            val y = getY(i.toDouble())
+        for (i in start..end step (step)) {
+            val y = getY(i)
             if (y > scrolledY - height && y < scrolledY + height)
                 if (yMargin >= verticalTextStep) {
                     yMargin = 0f
@@ -301,7 +301,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         }
     }
 
-    infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
+    private infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
         require(start.isFinite())
         require(endInclusive.isFinite())
         require(step > 0.0)

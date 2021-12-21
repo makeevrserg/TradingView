@@ -14,10 +14,10 @@ import com.google.gson.Gson
 class ChartViewModel(application: Application) : AndroidViewModel(application) {
     val toolbarTitle = MutableLiveData<String>()
     var connection: WebSocketClient? = null
-//    var data = MutableLiveData<List<Data>>()
+    var data = MutableLiveData<List<Data>>()
 
     //    //Для теста графика
-    var data = MutableLiveData<List<Data>>(Data.createList(100))
+//    var data = MutableLiveData<List<Data>>(Data.createList(100))
     val newData = MutableLiveData<WatchListItemModel>()
     val repository = (application as App).repository
     val stockItem: MutableLiveData<WatchListItemModel> = MutableLiveData()
