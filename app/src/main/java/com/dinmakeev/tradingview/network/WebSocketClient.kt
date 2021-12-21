@@ -84,7 +84,7 @@ class WebSocketClient(val endpointURI: URI?) {
 
 
     @OnMessage
-    fun onMessage(message: String?) {
+    suspend fun onMessage(message: String?) {
         if (messageHandler != null) {
             messageHandler?.handleMessage(message)
         }
@@ -110,7 +110,7 @@ class WebSocketClient(val endpointURI: URI?) {
 
 
     interface MessageHandler {
-        fun handleMessage(message: String?)
+        suspend fun handleMessage(message: String?)
     }
 
     fun closeConnection() {

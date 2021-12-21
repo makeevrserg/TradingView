@@ -114,7 +114,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
     }
 
     private fun scrollToLast(list: List<Data>) {
-        val x = (list.size * xStep).toInt()
+        val x = (list.size * xStep*mScaleX).toInt()
         scrollBy(x, 0)
     }
 
@@ -198,7 +198,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
                     ChartViewModel.offset.value = offset + 100
                 isUpdating = true
             }
-            scrollBy(toScrollOnX, toScrollOnY)
+            scrollBy((toScrollOnX).toInt(), (toScrollOnY).toInt())
             return true
         }
 

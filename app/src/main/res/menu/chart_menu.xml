@@ -4,9 +4,9 @@
 
     <!-- "Mark Favorite", should appear as action button if possible -->
     <item
-        android:id="@+id/action_zoom"
-        android:icon="@drawable/ic_zoom"
-        android:title="Сброс"
+        android:id="@+id/action_go_last"
+        android:icon="@drawable/ic_last"
+        android:title="В конец"
         app:showAsAction="ifRoom"/>
 
 </menu>

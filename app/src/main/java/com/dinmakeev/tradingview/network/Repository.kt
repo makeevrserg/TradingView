@@ -1,5 +1,6 @@
 package com.dinmakeev.tradingview.network
 
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,6 +20,10 @@ class Repository {
     suspend fun fetchIntraDayStock(symbolName: String, offset: Int = 1) = suspendCatching {
         api.fetchIntraDayStock(symbolName, offset)
     }
+    suspend fun fetchIcon(symbolName: String):Bitmap? = catching {
+            App.getBitmapAsset(symbolName)
+        }
+
 
 
 }

@@ -20,7 +20,6 @@ interface TradingApi {
 
     @GET("/stocks/intraday/{symbolName}")
     fun fetchIntraDayStock(
-
         @Path("symbolName") symbolName: String,
         @Query("offset") offset: Int = 1
     ):Call<Stock>

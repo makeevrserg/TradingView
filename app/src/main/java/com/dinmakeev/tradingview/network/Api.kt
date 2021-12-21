@@ -46,6 +46,7 @@ class Api {
         safeCall(api?.fetchIntraDayStock(symbolName, offset))
 
 
+
     private suspend inline fun <T> safeCall(
         call: Call<T>?,
         onError: (Exception) -> Unit = { exception -> exception.printStackTrace() }

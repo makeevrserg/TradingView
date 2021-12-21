@@ -30,7 +30,7 @@ class WatchListItemViewModel(
 
 
     val messageHandler = object : WebSocketClient.MessageHandler {
-        override fun handleMessage(message: String?) {
+        override suspend fun handleMessage(message: String?) {
             Log.d("Repository", "handleMessage: ${trackItem.value?.symbol}: ${message}")
             if (message?.contains("Pong is not received") == true) {
                 connection?.openConnection()
@@ -41,6 +41,7 @@ class WatchListItemViewModel(
             catching {
                 val watchListItem =
                     Gson().fromJson<WatchListItemModel>(message, WatchListItemModel::class.java)
+                watchListItem.data.bitmap = repository.fetchIcon(watchListItem.symbol)
                 val item = trackItem.value ?: return
                 item.updateData(watchListItem)
                 trackItem.postValue(item)

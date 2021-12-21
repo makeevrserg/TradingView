@@ -1,5 +1,6 @@
 package com.dinmakeev.tradingview.presentation.watchlist
 
+import android.graphics.Bitmap
 import com.google.gson.annotations.SerializedName
 import kotlin.math.abs
 
@@ -15,6 +16,7 @@ data class WatchListItemModel(
         var description: String?=null,
         var icon: String?=null,
         var symbol: String,
+        var bitmap:Bitmap?=null,
         var price: Float?=null,
         var oldPrice: Float? = price
     )

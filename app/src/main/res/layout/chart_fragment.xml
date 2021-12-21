@@ -19,14 +19,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:translationZ="-10dp"
+            android:layout_marginTop="33dp"
+            android:visibility="@{(viewModel.stockItem.data.bitmap==null)?View.GONE:View.VISIBLE}"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:src="@drawable/ic_circle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_marginTop="33dp"
-            android:src="@drawable/ic__google"
+            android:bitmap="@{viewModel.stockItem.data.bitmap}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -37,7 +46,7 @@
             android:layout_marginTop="33dp"
             android:indeterminateTint="#4477FF"
             android:translationZ="-10dp"
-            android:visibility="@{(viewModel.stockItem.data.icon!=null)?View.GONE:View.VISIBLE}"
+            android:visibility="@{(viewModel.stockItem.data.bitmap!=null)?View.GONE:View.VISIBLE}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

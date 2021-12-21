@@ -1,23 +1,15 @@
 package com.dinmakeev.tradingview.presentation.chart
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.webkit.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.dinmakeev.tradingview.R
-import com.dinmakeev.tradingview.application.App
 import com.dinmakeev.tradingview.databinding.ChartFragmentBinding
-import com.dinmakeev.tradingview.network.models.stocks.Data
-import com.google.gson.Gson
-import kotlinx.android.synthetic.main.chart_fragment.*
 
 class ChartFragment : Fragment() {
 
@@ -61,7 +53,7 @@ class ChartFragment : Fragment() {
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_zoom -> {
+            R.id.action_go_last -> {
 
                 binding.kChart.reset()
                 return true
