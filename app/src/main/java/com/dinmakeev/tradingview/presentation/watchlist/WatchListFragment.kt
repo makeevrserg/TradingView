@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dinmakeev.tradingview.R
 import com.dinmakeev.tradingview.databinding.WatchListFragmentBinding
 import com.dinmakeev.tradingview.network.WebSocketClient
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 

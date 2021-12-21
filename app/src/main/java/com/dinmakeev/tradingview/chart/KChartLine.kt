@@ -7,9 +7,8 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import com.dinmakeev.tradingview.network.models.stocks.Data
 import com.dinmakeev.tradingview.presentation.chart.ChartViewModel
-import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 
 
 class KChartLine(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _attrs) {

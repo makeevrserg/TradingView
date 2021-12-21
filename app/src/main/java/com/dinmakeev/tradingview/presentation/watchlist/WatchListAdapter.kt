@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dinmakeev.tradingview.databinding.WatchItemBinding
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 
 
 class WatchListAdapter(

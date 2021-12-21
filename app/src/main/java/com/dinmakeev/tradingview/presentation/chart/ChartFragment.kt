@@ -33,10 +33,10 @@ class ChartFragment : Fragment() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = viewLifecycleOwner
 
-        val arguments = ChartFragmentArgs.fromBundle(requireArguments())
-        viewModel.create(arguments.symbol)
+//        val arguments = ChartFragmentArgs.fromBundle(requireArguments())
+//        viewModel.create(arguments.symbol)
 //        // Для теста
-//        viewModel.create("AAPL")
+        viewModel.create("AAPL")
         ChartViewModel.offset.observe(viewLifecycleOwner,{
             lifecycleScope.launch(Dispatchers.IO) {
                 viewModel.loadData(it)

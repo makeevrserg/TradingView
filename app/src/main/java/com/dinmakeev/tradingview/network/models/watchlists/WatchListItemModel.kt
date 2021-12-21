@@ -1,4 +1,4 @@
-package com.dinmakeev.tradingview.presentation.watchlist
+package com.dinmakeev.tradingview.network.models.watchlists
 
 import android.graphics.Bitmap
 import com.google.gson.annotations.SerializedName

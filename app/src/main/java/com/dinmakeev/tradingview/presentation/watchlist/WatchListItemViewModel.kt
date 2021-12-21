@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.dinmakeev.tradingview.application.App
 import com.dinmakeev.tradingview.network.WebSocketClient
 import com.dinmakeev.tradingview.network.catching
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 import com.dinmakeev.tradingview.utils.MessageHandler
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers

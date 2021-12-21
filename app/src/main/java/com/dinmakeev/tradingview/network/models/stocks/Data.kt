@@ -1,7 +1,6 @@
 package com.dinmakeev.tradingview.network.models.stocks
 
-import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
-import java.text.DateFormat
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.random.Random
@@ -24,7 +23,7 @@ data class Data(
     val volume: Int? = 0
 ) {
 
-    constructor(d:WatchListItemModel):this(close = (d.data.price?.toDouble())?:0.0,symbol = d.symbol)
+    constructor(d: WatchListItemModel):this(close = (d.data.price?.toDouble())?:0.0,symbol = d.symbol)
     fun isLow() = open > close
     fun isHigh() = open < close
 

@@ -1,17 +1,17 @@
 package com.dinmakeev.tradingview.chart
 
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Canvas
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import com.dinmakeev.tradingview.network.models.stocks.Data
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 import com.dinmakeev.tradingview.presentation.chart.ChartViewModel
-import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -61,6 +61,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
     var track: Boolean = true
 
     var data: MutableList<Data> = mutableListOf()
+
     /**
      * Параметр хранит перемещение по X,Y
      */
@@ -95,27 +96,38 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             list.toMutableList()
         else
             list.toMutableList().apply { addAll(data) }
+        val oldMax = maxY
         calculateMinMax(data)
         if (ChartViewModel.offset.value != 0)
-            scrollToLast(list)
+            scrollToLast(list, oldMax)
         else scrollToLast()
         isUpdating = false
         invalidate()
     }
 
+
+    var xAnimator: ValueAnimator? = null
+    var yAnimator: ValueAnimator? = null
+    var xAnimated: Int = 0
+    var yAnimated: Int = 0
+
     private fun scrollToLast() {
         mScaleY = 8.0 / (maxY / minY).toDouble()
-        scrollX = 0
-        scrollY = 0
+//        scrollX = 0
+//        scrollY = 0
         val y = data.lastOrNull()?.open ?: 0.0
         val x = (plotWidth - width / 2).toInt()
         val yAddition = -height / 2
-        scrollBy(x, getY(y).toInt() + yAddition)
+
+        scrollBy(x - scrollX, getY(y).toInt() + yAddition - scrollY)
     }
 
-    private fun scrollToLast(list: List<Data>) {
-        val x = (list.size * xStep*mScaleX).toInt()
-        scrollBy(x, 0)
+
+    private fun scrollToLast(list: List<Data>, oldMax: Float) {
+        val x = (list.size * xStep * mScaleX).toInt()
+        val yy = abs(getY(maxY.toDouble()) - getY(oldMax.toDouble()))
+        val y = if (maxY > oldMax) yy else 0
+        scrollBy(x, y.toInt())
     }
 
 
@@ -148,7 +160,8 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
 
     fun getX(x: Float) = x * mScaleX.toFloat()
 
-    fun isXInView(x:Float) = getX(x) > scrolledX - width - xStep && getX(x) < scrolledX + width + xStep
+    fun isXInView(x: Float) =
+        getX(x) > scrolledX - width - xStep && getX(x) < scrolledX + width + xStep
 
     /**
      * Слушатель жестов масштабирования
@@ -166,7 +179,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
      * Настоящая ширина и высота графика
      */
     val plotWidth: Int
-        get() = (data.size * xStep*mScaleX).toInt()
+        get() = (data.size * xStep * mScaleX).toInt()
     val plotHeight: Int
         get() = abs(getY(minY.toDouble()) - getY(maxY.toDouble())).toInt()
 
@@ -208,7 +221,8 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         }
 
     }
-    fun reset(){
+
+    fun reset() {
 
         track = true
         if (ChartViewModel.offset.value == 0)
@@ -220,6 +234,7 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             }
         }
     }
+
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             track = false
@@ -264,25 +279,39 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
             return
         var yMargin = 0f
         var prevY = getY(minY.toInt().toDouble())
-        println("MinMax=${minY} ${maxY}")
 
+        val start = minY.toInt() - (maxY / minY * mScaleY).toInt() - (maxY / minY / mScaleY).toInt()
+        val end = maxY.toInt() + (maxY / minY * mScaleY).toInt() + (maxY / minY / mScaleY).toInt()
+        val step = if (mScaleY < 1) 1 * mScaleY else 1 / mScaleY
 
-        for (i in minY.toInt() - (maxY / minY*mScaleY).toInt() until maxY.toInt() + (maxY / minY*mScaleY).toInt() step 1) {
+        for (i in start.toDouble()..end.toDouble() step (step)) {
             val y = getY(i.toDouble())
-            if (yMargin >= verticalTextStep) {
-                yMargin = 0f
-                canvas.drawText(
-                    "${(i.toFloat()).round(2)}",
-                    (scrolledX.toFloat() - dpToPx(20)),
-                    y,
-                    textPaint()
-                )
-            }
+            if (y > scrolledY - height && y < scrolledY + height)
+                if (yMargin >= verticalTextStep) {
+                    yMargin = 0f
+                    canvas.drawText(
+                        "%.2f".format(Locale.US, i),
+                        (scrolledX.toFloat() - dpToPx(20)),
+                        y,
+                        textPaint()
+                    )
+                }
             yMargin += abs(y - prevY)
             prevY = y
         }
     }
 
+    infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
+        require(start.isFinite())
+        require(endInclusive.isFinite())
+        require(step > 0.0)
+        val sequence = generateSequence(start) { prev ->
+            if (prev == Double.POSITIVE_INFINITY) return@generateSequence null
+            val next = prev + step
+            if (next > endInclusive) null else next
+        }
+        return sequence.asIterable()
+    }
 
     /**
      * Тут рисуем дату таким образом, чтобы она как и цены не наезжала друг на друга
@@ -298,12 +327,12 @@ open class AbstractChart(context: Context, attrs: AttributeSet?) :
         val step = max(horizontalTextStep.toInt(), (horizontalTextStep * mScaleX).toInt())
         var futureTime = 0L
         val format = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-        for (i in 0 until data.size+(step*mScaleX).toInt() step step.toInt()) {
+        for (i in 0 until data.size + (step * mScaleX).toInt() step step.toInt()) {
             if (getX(x) > scrolledX - width && getX(x) < scrolledX + width) {
                 var d = data.elementAtOrNull(i)?.date
-                if (d==null) {
-                    val time = System.currentTimeMillis()+futureTime
-                    futureTime+=1000
+                if (d == null) {
+                    val time = System.currentTimeMillis() + futureTime
+                    futureTime += 1000
                     d = format.format(Date(time))
 
                 }

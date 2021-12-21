@@ -5,8 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
-import com.dinmakeev.tradingview.network.models.stocks.Data
-import com.dinmakeev.tradingview.presentation.watchlist.WatchListItemModel
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 
 
 class KChart(context: Context, _attrs: AttributeSet?) : AbstractChart(context, _attrs) {

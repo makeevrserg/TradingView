@@ -34,7 +34,7 @@
             android:id="@+id/imageView"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:padding="5dp"
+            android:padding="10dp"
             android:layout_marginTop="33dp"
             android:bitmap="@{viewModel.stockItem.data.bitmap}"
             app:layout_constraintEnd_toEndOf="parent"

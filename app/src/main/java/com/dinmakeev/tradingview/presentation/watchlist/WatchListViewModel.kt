@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.dinmakeev.tradingview.application.App
 import com.dinmakeev.tradingview.network.Repository
 import com.dinmakeev.tradingview.network.WebSocketClient
+import com.dinmakeev.tradingview.network.models.watchlists.WatchListItemModel
 import com.dinmakeev.tradingview.network.models.watchlists.Watchlists
 import com.dinmakeev.tradingview.network.models.watchlists.WatchlistsItem
 import com.dinmakeev.tradingview.utils.MessageHandler
@@ -78,7 +79,8 @@ class WatchListViewModel(application: Application) : AndroidViewModel(applicatio
         currentWatchList = watchLists?.getOrNull(position)
         currentWatchList?.let { watchListItem ->
             toolbarTitle.postValue(watchListItem.name)
-            val list = watchListItem.symbols.filterIndexed { i, symbol -> !app.DataManager().isSymbolRemoved(watchListItem.name,symbol,i) }.map { WatchListItemModel(WatchListItemModel.Data(symbol = it)) }.toMutableList()
+            val list = watchListItem.symbols.filterIndexed { i, symbol -> !app.DataManager().isSymbolRemoved(watchListItem.name,symbol,i) }.map { WatchListItemModel(
+                WatchListItemModel.Data(symbol = it)) }.toMutableList()
             _watchListItems.postValue(list)
         }
     }
