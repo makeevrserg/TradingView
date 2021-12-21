@@ -16,7 +16,8 @@ import com.dinmakeev.tradingview.utils.MessageHandler
 
 @BindingAdapter("android:bitmap")
 fun setImageViewResource(imageView: ImageView, bitmap: Bitmap?) {
-    imageView.setImageBitmap(bitmap ?: return)
+    imageView.setImageBitmap(bitmap)
+
 }
 class App : Application() {
     lateinit var repository: Repository
@@ -25,7 +26,7 @@ class App : Application() {
         val _notifyMessage = MutableLiveData(MessageHandler<String>(null))
         val isLoading = MutableLiveData(true)
         private lateinit var assetManager:AssetManager
-        fun getBitmapAsset(name:String):Bitmap? = assetManager.open("$name.png").use(BitmapFactory::decodeStream)
+        fun getBitmapAsset(name:String):Bitmap? = assetManager.open("${name.lowercase()}.png").use(BitmapFactory::decodeStream)
     }
 
 

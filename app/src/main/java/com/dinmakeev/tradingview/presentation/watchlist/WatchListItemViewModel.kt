@@ -34,7 +34,11 @@ class WatchListItemViewModel(
             Log.d("Repository", "handleMessage: ${trackItem.value?.symbol}: ${message}")
             if (message?.contains("Pong is not received") == true) {
                 connection?.openConnection()
-                connection?.sendMessage(WebSocketClient.getMessage(trackItem.value?.symbol?:return))
+                connection?.sendMessage(
+                    WebSocketClient.getMessage(
+                        trackItem.value?.symbol ?: return
+                    )
+                )
                 return
             }
 
@@ -42,7 +46,7 @@ class WatchListItemViewModel(
                 val watchListItem =
                     Gson().fromJson<WatchListItemModel>(message, WatchListItemModel::class.java)
                 watchListItem.data.bitmap = repository.fetchIcon(watchListItem.symbol)
-                val item = trackItem.value ?: return
+                val item = trackItem.value ?: return@catching
                 item.updateData(watchListItem)
                 trackItem.postValue(item)
             }
@@ -52,22 +56,29 @@ class WatchListItemViewModel(
 
     }
 
-    fun clicked(){
+    fun clicked() {
         val item = trackItem.value
-        if (item==null){
+        if (item == null) {
             App._notifyMessage.value = MessageHandler("Данные еще не загрузились")
             return
         }
-        onTrackClicked(trackItem.value?:return)
+        onTrackClicked(trackItem.value ?: return)
     }
 
     fun connectWebSocket() =
         viewModelScope.launch(Dispatchers.IO) {
-            if (connection==null)
-            connection = WebSocketClient.createConnection(trackItem.value?.symbol?:return@launch, messageHandler)
+            if (connection == null)
+                connection = WebSocketClient.createConnection(
+                    trackItem.value?.symbol ?: return@launch,
+                    messageHandler
+                )
             else {
                 connection?.openConnection()
-                connection?.sendMessage(WebSocketClient.getMessage(trackItem.value?.symbol?:return@launch))
+                connection?.sendMessage(
+                    WebSocketClient.getMessage(
+                        trackItem.value?.symbol ?: return@launch
+                    )
+                )
             }
         }
 

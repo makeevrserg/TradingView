@@ -45,6 +45,7 @@ class ChartViewModel(application: Application) : AndroidViewModel(application) {
             catching {
                 val watchListItem =
                     Gson().fromJson<WatchListItemModel>(message, WatchListItemModel::class.java)
+                watchListItem.data.bitmap = repository.fetchIcon(watchListItem.symbol)
                 val item = stockItem.value ?: return
                 item.updateData(watchListItem)
                 newData.postValue(item)

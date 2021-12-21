@@ -1,6 +1,9 @@
 package com.dinmakeev.tradingview.network
 
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.net.URI
 import java.nio.ByteBuffer
 import javax.websocket.*
@@ -84,9 +87,11 @@ class WebSocketClient(val endpointURI: URI?) {
 
 
     @OnMessage
-    suspend fun onMessage(message: String?) {
+    fun onMessage(message: String?) {
         if (messageHandler != null) {
-            messageHandler?.handleMessage(message)
+            CoroutineScope(Dispatchers.IO).launch {
+                messageHandler?.handleMessage(message)
+            }
         }
     }
 

@@ -51,6 +51,7 @@ data class WatchListItemModel(
     fun updateData(watchListItem: WatchListItemModel?) {
 
         type = watchListItem?.type?:type
+        data.bitmap = watchListItem?.data?.bitmap?:data.bitmap
         data.oldPrice = data.price?:data.oldPrice
         data.price = watchListItem?.data?.price?:data.price
         data.description = watchListItem?.data?.description?:data.description
